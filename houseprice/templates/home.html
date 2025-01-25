@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home</title>
+    {% load static %}
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        background-image: url("{% static 'images/new.jpg' %}");
+        background-size: cover;
+        background-attachment: fixed;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      body::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
+        z-index: 0;
+      }
+
+      .navbar {
+        width: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 10px 0;
+        position: absolute;
+        top: 0;
+        z-index: 10;
+      }
+
+      .navbar a {
+        color: white;
+        text-decoration: none;
+        font-size: 1.2rem;
+        font-weight: bold;
+        padding: 5px 15px;
+        transition: background 0.3s;
+      }
+
+      .navbar a:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 5px;
+      }
+
+      .content-container {
+        position: relative;
+        z-index: 1;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 40px 60px;
+        border-radius: 15px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        text-align: center;
+        margin-top: 60px;
+      }
+
+      .content-container h1 {
+        font-size: 3rem;
+        font-weight: bold;
+        color: #4caf50;
+        margin-bottom: 20px;
+      }
+
+      .content-container p {
+        font-size: 1.5rem;
+        color: #555;
+      }
+
+      .content-container button {
+        padding: 10px 20px;
+        font-size: 1.2rem;
+        color: white;
+        background-color: #4caf50;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 20px;
+        transition: all 0.3s ease;
+      }
+
+      .content-container button:hover {
+        background-color: #45a049;
+        transform: scale(1.1);
+      }
+
+      /* Dialog Box */
+      #dialog {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
+        max-width: 500px;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+        max-height: 80vh; /* Limit the height of the dialog box */
+        overflow-y: auto; /* Add vertical scrolling */
+      }
+
+      #dialog h2 {
+        margin: 0 0 15px;
+        font-size: 1.5rem;
+        color: #333;
+      }
+
+      #dialog form {
+        display: flex;
+        flex-direction: column;
+      }
+
+      #dialog form label {
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+
+      #dialog form input,
+      #dialog form select {
+        margin-bottom: 15px;
+        padding: 8px;
+        font-size: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+
+      #dialog form button {
+        padding: 10px 20px;
+        font-size: 1rem;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      #dialog form button:hover {
+        background-color: #45a049;
+      }
+
+      #dialog form .close-btn {
+        background-color: #ff4d4d;
+      }
+
+      /* Loading Box */
+      #loading {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(255, 255, 255, 0.9);
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+        text-align: center;
+      }
+
+      #predicted-price {
+        display: none;
+        position: relative;
+        z-index: 1;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        margin-top: 20px;
+        font-size: 1.5rem;
+        color: #4caf50;
+        text-align: center;
+        font-family: "Georgia", serif;
+        font-size: 2rem;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Navigation Bar -->
+    <div class="navbar">
+      <a href="{% url 'home' %}">Home</a>
+      <a href="{% url 'history' %}">History</a>
+      <a href="{% url 'logout' %}">Logout</a>
+    </div>
+
+    <div class="content-container">
+      <h1>Welcome to Nepali House Price Prediction</h1>
+      <p>
+        Discover insights and trends in Nepali real estate with cutting-edge AI
+        predictions.
+      </p>
+      <button onclick="openDialog()">
+        Find out the price of your dream house
+      </button>
+    </div>
+
+    <div id="dialog">
+      <h2>Enter House Details</h2>
+      <form
+        id="pricePredictionForm"
+        action="{% url 'home' %}"
+        method="POST"
+        onsubmit="showLoading();"
+      >
+        {% csrf_token %}
+        <label for="number_of_rooms">Number of Rooms:</label>
+        <input
+          type="number"
+          step="1"
+          id="number_of_rooms"
+          name="number_of_rooms"
+          required  oninput="validateNonNegative(this)"
+        />
+
+        <label for="number_of_bathrooms">Number of Bathrooms:</label>
+        <input
+          type="number"
+          step="1"
+          id="number_of_bathrooms"
+          name="number_of_bathrooms"
+          required oninput="validateNonNegative(this)"
+        />
+
+        <label for="number_of_floors">Number of Floors:</label>
+        <input
+          type="number"
+          step="1"
+          id="number_of_floors"
+          name="number_of_floors"
+          required oninput="validateNonNegative(this)"
+        />
+
+        <label for="area">Area (anna):</label>
+        <input type="number" step="0.01" id="area" name="area" required oninput="validateNonNegative(this)" />
+
+        <label for="road_width">Road Width (ft):</label>
+        <input
+          type="number"
+          step="0.01"
+          id="road_width"
+          name="road_width"
+          required oninput="validateNonNegative(this)"
+        />
+
+        <label for="amenities">Select Amenities:</label>
+        <select
+          id="amenities"
+          name="amenities"
+          multiple
+          required
+          onchange="updateAmenitiesCount()"
+        >
+          <option value="Parking">Parking</option>
+          <option value="Lawn">Lawn</option>
+          <option value="Garage">Garage</option>
+          <option value="Frontyard">Frontyard</option>
+          <option value="Fencing">Fencing</option>
+          <option value="Balcony">Balcony</option>
+          <option value="Backyard">Backyard</option>
+          <option value="Modular Kitchen">Modular Kitchen</option>
+          <option value="Garden">Garden</option>
+          <option value="Water Supply">Water Supply</option>
+          <option value="Drainage">Drainage</option>
+          <option value="Water Tank">Water Tank</option>
+          <option value="Wifi">Wifi</option>
+          <option value="Water Well">Water Well</option>
+          <option value="Solar Water">Solar Water</option>
+          <option value="TV Cable">TV Cable</option>
+          <option value="Microwave">Microwave</option>
+          <option value="CCTV">CCTV</option>
+          <option value="Store Room">Store Room</option>
+          <option value="Intercom">Intercom</option>
+          <option value="Kids Playground">Kids Playground</option>
+          <option value="Gym">Gym</option>
+          <option value="Air Condition">Air Condition</option>
+          <option value="Deck">Deck</option>
+          <option value="Jacuzzi">Jacuzzi</option>
+          <option value="Washing Machine">Washing Machine</option>
+          <option value="Security Staff">Security Staff</option>
+          <option value="Internet">Internet</option>
+          <option value="Maintenance">Maintenance</option>
+          <option value="Swimming Pool">Swimming Pool</option>
+          <option value="Cafeteria">Cafeteria</option>
+          <option value="Electricity Backup">Electricity Backup</option>
+          <option value="Lift">Lift</option>
+          <option value="Others">Others</option>
+        </select>
+
+        <label for="amenities_count">Number of Amenities:</label>
+        <input
+          type="number"
+          id="amenities_count"
+          name="amenities_count"
+          required
+          readonly
+        />
+
+        <label for="city">City:</label>
+        <select id="city" name="city" required>
+          <option value="Bhaktapur">Bhaktapur</option>
+          <option value="Kathmandu">Kathmandu</option>
+          <option value="Lalitpur">Lalitpur</option>
+        </select>
+
+        <label for="road_type">Road Type:</label>
+        <select id="road_type" name="road_type" required>
+          <option value="Blacktopped">Blacktopped</option>
+          <option value="Gravelled">Gravelled</option>
+          <option value="Soil Stabilized">Soil Stabilized</option>
+        </select>
+
+        <button type="submit">Predict Price</button>
+        <button type="button" class="close-btn" onclick="closeDialog()">
+          Close
+        </button>
+      </form>
+    </div>
+
+    <div id="loading">
+      <p>Loading... Please wait.</p>
+    </div>
+
+    <div
+      id="predicted-price"
+      style="display: none"
+      data-price="{{ predicted_price }}"
+    >
+      {% if predicted_price %}
+      <p>
+        The predicted price of your dream house is Rs {{
+        predicted_price|floatformat:2 }}
+      </p>
+      {% endif %}
+    </div>
+
+    <script>
+      function openDialog() {
+        document.getElementById("dialog").style.display = "block";
+      }
+
+      function closeDialog() {
+        document.getElementById("dialog").style.display = "none";
+      }
+
+      function showLoading() {
+        document.getElementById("loading").style.display = "block";
+        document.getElementById("dialog").style.display = "none";
+      }
+
+      // Function to format the predicted price with Indian/Nepali comma system
+      function formatPrice(price) {
+        // Format the price to use commas for lakhs and crores
+        return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      }
+
+      function showPredictedPrice() {
+        // Get the predicted price element
+        var predictedPriceElement = document.getElementById("predicted-price");
+
+        // Assuming the predicted price is passed as a data attribute or already in the element
+        var predictedPrice = predictedPriceElement.getAttribute("data-price"); // Example: price stored as data-price attribute
+
+        if (predictedPrice) {
+          // Format the predicted price
+          var formattedPrice = formatPrice(
+            Math.round(parseFloat(predictedPrice))
+          );
+
+          // Display the formatted price
+          predictedPriceElement.innerHTML =
+            "The predicted price of your dream house is Rs " + formattedPrice;
+        }
+
+        // Show the predicted price section
+        predictedPriceElement.style.display = "block";
+      }
+
+      function updateAmenitiesCount() {
+        var amenitiesSelect = document.getElementById("amenities");
+        var selectedOptions = amenitiesSelect.selectedOptions; // Get all selected options
+        var selectedCount = selectedOptions.length; // Count the number of selected options
+
+        // Update the amenities_count input field with the selected count
+        document.getElementById("amenities_count").value = selectedCount;
+      }
+
+      // This function will be called after form submission and page reload
+      window.onload = function () {
+        if (document.getElementById("predicted-price").innerHTML.trim()) {
+          showPredictedPrice();
+        }
+      };
+
+      function validateNonNegative(input) {
+        if (input.value < 0) {
+          input.value = 0;
+        }
+      }
+      
+    </script>
+  </body>
+</html>

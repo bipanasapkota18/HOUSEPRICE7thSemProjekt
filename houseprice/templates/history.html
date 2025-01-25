@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction History</title>
+
+    {% comment %} <link rel="stylesheet" href="{{ request.scheme }}://{{ request.get_host }}{% static 'css/styles.css' %}"> {% endcomment %}
+
+
+    {% load static %}
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-image: url("{% static 'images/new.jpg' %}");
+            background-size: cover;
+            background-attachment: fixed;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .navbar {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 15px 0;
+            position: absolute;
+            top: 0;
+            z-index: 10;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.3rem;
+            font-weight: bold;
+            padding: 8px 20px;
+            transition: background 0.3s;
+        }
+
+        .navbar a:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+        }
+
+        .animated-title-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 120px;
+            width: 100%;
+            animation: fadeIn 2s ease-out;
+            background-color: rgba(255, 255, 255, 0.6);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h2 {
+            font-size: 3rem;
+            color: red;
+            font-weight: bold;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .content-container {
+            max-height: 500px; /* Set a fixed height for the scrollable area */
+            width: 100%; /* Ensure it matches the table width */
+            margin-top: 20px;
+            overflow-y: auto; /* Enable vertical scrolling */
+            border: 1px solid #ddd; /* Optional: Add a border for better visibility */
+            border-radius: 10px; /* Optional: Add rounded corners */
+            background-color: rgba(255, 255, 255, 0.8); /* Optional: Match the table background */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: transparent; /* Make the table background transparent */
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        td {
+            background-color: #f9f9f9;
+        }
+
+        .price {
+            color: #ff5722;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            table {
+                width: 95%;
+            }
+
+            .navbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+
+
+<body>
+    <div class="navbar">
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'history' %}">History</a>
+        {% comment %} <a href="{% url 'download_history' %}">Download PDF</a> {% endcomment %}
+
+        <a href="{% url 'logout' %}">Logout</a>
+    </div>
+
+    <div class="animated-title-container">
+        <h2>Prediction History</h2>
+    </div>
+
+    <div class="content-container">
+        <table>
+            <tr>
+                <th>User</th>
+                <th>City</th>
+                <th>Number of Rooms</th>
+                <th>Number of Bathrooms</th>
+                <th>Number of Floors</th>
+                <th>Area(anna)</th>
+                <th>Road Width Feet</th>
+                <th>Predicted Price</th>
+                <th>Date</th>
+            </tr>
+
+            {% for prediction in predictions %}
+            <tr>
+                <td>{{ prediction.user }} </td>
+                <td>{{ prediction.city }}</td>
+                <td>{{ prediction.number_of_rooms }}</td>
+                <td>{{ prediction.number_of_bathrooms }}</td>
+                <td>{{ prediction.number_of_floors }}</td>
+                <td>{{ prediction.area }}</td>
+                <td>{{ prediction.road_width }}</td>
+                <td class="price">Rs {{ prediction.predicted_price|floatformat:0 }}</td>
+                <td>{{ prediction.prediction_date }}</td>
+            </tr>
+            {% endfor %}
+
+        </table>
+    </div>
+
+</body>
+</html>
